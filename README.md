@@ -4,6 +4,7 @@ Uses SutandoTsukai181's [PyBinaryReader](https://github.com/SutandoTsukai181/PyB
 # Usage
 For extracting: 
 `pak.exe *PAK NAME*` (Dragging and dropping also works)
+
 For repacking: 
 `pak.exe *FOLDER NAME* 0/1`. 
 0 is for Big Endian Gamecube and 1 is for Little Endian PS2.
