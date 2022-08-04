@@ -5,14 +5,20 @@ import sys
 from pathlib import Path
 import os
 import re
-
-Mypath = Path(sys.argv[1])
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("input",  help='Input file', type=str)
+parser.add_argument("-LE", help="Little Endian",action="store_true")
+parser.add_argument("-BE", help="Big Endian",action="store_true")
+args = parser.parse_args()
+Mypath = Path(args.input)
 directory = str(Mypath.resolve().parent)
 Myfilename = Mypath.name
 w = BinaryReader()
-isFile = os.path.isfile(sys.argv[1])
+isFile = os.path.isfile(args.input)
 unique_id = 0
 stringTable = []
+
 if(Mypath.is_file()):
     path = Mypath.open("rb")
     reader = BinaryReader(path.read())
@@ -48,7 +54,7 @@ if(Mypath.is_file()):
         fe.close()
         reader.seek(stay)
 if (Mypath.is_dir()):
-    newarchivename = sys.argv[1].replace('.unpack','')
+    newarchivename = args.input.replace('.unpack','')
     newarchive = open(newarchivename, "wb")
     listOfFiles = list()
     for (dirpath, dirnames, filenames) in os.walk(Mypath):
@@ -56,16 +62,18 @@ if (Mypath.is_dir()):
     def extract_int(s):
         return int(re.findall(r"\d+", s)[0])
     listOfFiles.sort(key=extract_int)
-    if (sys.argv[2] == "1"):
+    if args.LE:
         w.set_endian(False)
         w.write_str_fixed("kcap",4)
         w.write_uint32(1)
-    if (sys.argv[2] == "0"):
+    if args.BE:
         w.set_endian(True)
         w.write_str_fixed("pack",4)
         w.write_uint32(0)
     else:
-        print("Not a valid argument")
+        w.set_endian(True)
+        w.write_str_fixed("pack",4)
+        w.write_uint32(0)
     stringOffset = (len(listOfFiles) * 12 + 24)
     w.align(stringOffset)
     w.seek(0x10)
@@ -83,7 +91,7 @@ if (Mypath.is_dir()):
     w.seek(24)
     for elem in listOfFiles:
         gettingReadyForNewID = elem.split("_",1)
-        ID = gettingReadyForNewID[0].replace((sys.argv[1] + '\\'),"")
+        ID = gettingReadyForNewID[0].replace((args.input + '\\'),"")
         w.write_uint32(int(ID))
         stay = w.pos()
         w.seek(0,2)
